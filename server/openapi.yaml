@@ -1,0 +1,182 @@
+openapi: 3.0.3
+info:
+  title: Stargazing Educational REST API
+  description: Навчальний API косметологічної клініки. Реальні медичні дані не використовуються.
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000
+    description: Локальний Express-сервер
+paths:
+  /api/health:
+    get:
+      summary: Доступність API та бази даних
+      tags: [Monitoring]
+      responses:
+        '200':
+          description: Сервіс та PostgreSQL працюють
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+        '503': { description: База даних недоступна }
+  /api/services:
+    get:
+      summary: Отримати каталог послуг із PostgreSQL
+      tags: [Services]
+      responses:
+        '200':
+          description: Список послуг
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  services:
+                    type: array
+                    items: { $ref: '#/components/schemas/Service' }
+        '500': { description: Внутрішня помилка }
+  /api/session:
+    get:
+      summary: Почати або продовжити сесію браузера
+      tags: [Sessions]
+      responses:
+        '200':
+          description: Статистика поточної сесії
+          headers:
+            Set-Cookie:
+              description: HttpOnly cookie, що посилається на сесію в PostgreSQL
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visits: { type: integer, example: 1 }
+                  trackedAppointments: { type: integer, example: 0 }
+  /api/appointments:
+    post:
+      summary: Створити демонстраційну заявку на процедуру
+      tags: [Appointments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppointmentCreate' }
+      responses:
+        '201':
+          description: Заявку створено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  reference: { type: string, example: SG-AB12CD34EF56 }
+                  status: { type: string, example: new }
+        '422': { description: Дані не проходять перевірку або послуга не існує }
+        '429': { description: Перевищено ліміт запитів }
+  /api/appointments/mine:
+    get:
+      summary: Заявки поточної браузерної сесії
+      description: Навчальна сесія, не замінює автентифікації користувача.
+      tags: [Appointments]
+      responses:
+        '200':
+          description: Нечутливі поля заявок поточної сесії
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointments:
+                    type: array
+                    items: { $ref: '#/components/schemas/AppointmentSummary' }
+  /api/metrics:
+    get:
+      summary: Метрики продуктивності сервера
+      tags: [Monitoring]
+      security: [{ MonitorToken: [] }]
+      responses:
+        '200':
+          description: Оперативні метрики в оперативній пам'яті
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uptimeSeconds: { type: integer }
+                  requestsTotal: { type: integer }
+                  httpErrorsTotal: { type: integer }
+                  recentRequests: { type: integer }
+                  averageLatencyMs: { type: number }
+                  p95LatencyMs: { type: number }
+                  memoryRssMb: { type: integer }
+        '403': { description: Не передано правильний X-Monitor-Token }
+  /api/ai/consult:
+    post:
+      summary: Інформаційний AI-помічник з догляду за шкірою
+      description: Потребує OPENAI_API_KEY на сервері. Не є медичною консультацією.
+      tags: [AI]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question: { type: string, minLength: 3, maxLength: 500, example: "Для чого потрібен SPF?" }
+      responses:
+        '200':
+          description: Відповідь AI API
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer: { type: string }
+        '422': { description: Неправильна довжина питання }
+        '503': { description: Не задано API-ключ }
+        '502': { description: Зовнішній AI-сервіс недоступний }
+components:
+  securitySchemes:
+    MonitorToken:
+      type: apiKey
+      in: header
+      name: X-Monitor-Token
+  schemas:
+    Health:
+      type: object
+      properties:
+        status: { type: string, example: ok }
+        database: { type: string, example: connected }
+        service: { type: string, example: stargazing }
+    Service:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        slug: { type: string, example: cleaning }
+        title: { type: string, example: Чистка обличчя }
+        category: { type: string, example: Обличчя }
+        description: { type: string }
+        duration_min: { type: integer, example: 75 }
+        price_uah: { type: integer, example: 1200 }
+        image_key: { type: string, example: clean }
+    AppointmentCreate:
+      type: object
+      required: [name, phone, serviceId, date, time]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80, example: Тестова Людина }
+        phone: { type: string, example: '+380 67 123 45 67' }
+        serviceId: { type: integer, example: 1 }
+        date: { type: string, format: date, example: '2026-12-15' }
+        time: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', example: '12:00' }
+        comment: { type: string, maxLength: 500, example: Навчальний тест }
+    AppointmentSummary:
+      type: object
+      properties:
+        reference: { type: string }
+        service: { type: string }
+        date: { type: string, format: date }
+        time: { type: string }
+        status: { type: string }
+        created_at: { type: string, format: date-time }

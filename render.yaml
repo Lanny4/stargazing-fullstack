@@ -1,0 +1,22 @@
+# Шаблон Render Blueprint. Вартість сервісу/БД та доступні плани перевіряй у Render.
+# DATABASE_URL вводиться користувачем як секрет; цей файл не створює базу автоматично.
+services:
+  - type: web
+    name: stargazing-fullstack
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run db:setup && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: METRICS_TOKEN
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5-mini

@@ -1,0 +1,62 @@
+
+> stargazing-labs-2-6@1.0.0 test
+> node --test server/tests/*.test.js
+
+TAP version 13
+# Subtest: коректна заявка проходить валідацію
+ok 1 - коректна заявка проходить валідацію
+  ---
+  duration_ms: 5.550462
+  type: 'test'
+  ...
+# Subtest: неправильний телефон блокується
+ok 2 - неправильний телефон блокується
+  ---
+  duration_ms: 0.819192
+  type: 'test'
+  ...
+# Subtest: дата в минулому блокується
+ok 3 - дата в минулому блокується
+  ---
+  duration_ms: 0.178979
+  type: 'test'
+  ...
+# Subtest: неіснуюча дата блокується
+ok 4 - неіснуюча дата блокується
+  ---
+  duration_ms: 0.171868
+  type: 'test'
+  ...
+# Subtest: час поза графіком блокується
+ok 5 - час поза графіком блокується
+  ---
+  duration_ms: 0.215425
+  type: 'test'
+  ...
+# Subtest: відсутня послуга блокується
+ok 6 - відсутня послуга блокується
+  ---
+  duration_ms: 0.168884
+  type: 'test'
+  ...
+# Subtest: занадто довге питання AI блокується
+ok 7 - занадто довге питання AI блокується
+  ---
+  duration_ms: 0.25315
+  type: 'test'
+  ...
+# Subtest: звичайне питання AI приймається
+ok 8 - звичайне питання AI приймається
+  ---
+  duration_ms: 0.375325
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 115.41577

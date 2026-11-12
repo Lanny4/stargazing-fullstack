@@ -1,0 +1,344 @@
+{
+  "info": {
+    "name": "Stargazing — Labs 2–6 REST API",
+    "description": "Запити для лабораторної №3 та перевірки №4–6. Лише тестові дані.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const d = new Date();",
+          "d.setDate(d.getDate() + 7);",
+          "const year = d.getFullYear();",
+          "const month = String(d.getMonth()+1).padStart(2, \"0\");",
+          "const day = String(d.getDate()).padStart(2, \"0\");",
+          "pm.collectionVariables.set(\"futureDate\", `${year}-${month}-${day}`);"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Health (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        },
+        "description": ""
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"health 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"PostgreSQL connected\", () => pm.expect(pm.response.json().database).to.eql(\"connected\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Services from PostgreSQL (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/services",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "services"
+          ]
+        },
+        "description": ""
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"services 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"catalog has 6+ rows\", () => pm.expect(pm.response.json().services.length).to.be.at.least(6));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Session and cookie (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/session",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "session"
+          ]
+        },
+        "description": ""
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"session 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"session has visits\", () => pm.expect(pm.response.json().visits).to.be.at.least(1));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Create appointment (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/appointments",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "appointments"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Тестова Людина\",\n  \"phone\": \"+380 67 123 45 67\",\n  \"serviceId\": 1,\n  \"date\": \"{{futureDate}}\",\n  \"time\": \"12:00\",\n  \"comment\": \"Лабораторна 3 — тестові дані\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"appointment created\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"lastReference\", pm.response.json().reference);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Appointments for session (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/appointments/mine",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "appointments",
+            "mine"
+          ]
+        },
+        "description": ""
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"my appointments 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"array returned\", () => pm.expect(pm.response.json().appointments).to.be.an(\"array\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Invalid appointment (422)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/appointments",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "appointments"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Т\",\n  \"phone\": \"12\",\n  \"serviceId\": 99999,\n  \"date\": \"2020-01-01\",\n  \"time\": \"23:59\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"bad request 422\", () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 AI consult (needs OPENAI_API_KEY)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/ai/consult",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "ai",
+            "consult"
+          ]
+        },
+        "description": "Без власного OPENAI_API_KEY очікується 503; із дійсним ключем — 200.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question\": \"Для чого потрібен SPF?\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 Metrics (X-Monitor-Token)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Monitor-Token",
+            "value": "{{metricsToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/metrics",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "metrics"
+          ]
+        },
+        "description": "Заповни змінну metricsToken відповідно до server/.env."
+      },
+      "response": []
+    },
+    {
+      "name": "09 OpenAPI specification",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/openapi.yaml",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "openapi.yaml"
+          ]
+        },
+        "description": ""
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"OpenAPI YAML 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "futureDate",
+      "value": ""
+    },
+    {
+      "key": "lastReference",
+      "value": ""
+    },
+    {
+      "key": "metricsToken",
+      "value": "REPLACE_WITH_ENV_METRICS_TOKEN"
+    }
+  ]
+}

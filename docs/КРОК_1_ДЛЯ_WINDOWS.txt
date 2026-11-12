@@ -1,0 +1,11 @@
+ЛАБОРАТОРНІ 2–6 / STARGAZING / ПЕРШИЙ КРОК
+
+1. Розпакувати архів, відкрити Stargazing_Labs_2-6 у VS Code.
+2. У VS Code: Terminal → New Terminal (PowerShell, не WSL).
+3. Перевірити:
+   node -v
+   npm -v
+4. Якщо node не знайдено — встановити Node.js 22 LTS з https://nodejs.org/ і перезапустити VS Code.
+5. Наступний етап — встановити PostgreSQL + pgAdmin на Windows, створити базу та заповнити server/.env.
+
+НЕ запускай npm run dev, поки не налаштована PostgreSQL, і не вставляй секрети в чат.
